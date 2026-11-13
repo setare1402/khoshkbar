@@ -1,9 +1,36 @@
 
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const KhoshkbarApp());
+void main() => runApp(const KhoshkbarApp());
+
+const green = Color(0xFF174D32);
+const gold = Color(0xFFFFD778);
+
+class CartItem {
+  final String name;
+  final int kg;
+
+  const CartItem(this.name, this.kg);
 }
+
+class Flavor {
+  final String name;
+  final String image;
+  final String emoji;
+
+  const Flavor(this.name, this.image, this.emoji);
+}
+
+const flavors = [
+  Flavor('خام', 'assets/images/flavors/raw.png', '🌻'),
+  Flavor('شور', 'assets/images/flavors/salty.png', '🧂'),
+  Flavor('ساده', 'assets/images/flavors/plain.png', '🌻'),
+  Flavor('گلپر', 'assets/images/flavors/golpar.png', '🌿'),
+  Flavor('لیمو', 'assets/images/flavors/lemon.png', '🍋'),
+  Flavor('سس رنچ', 'assets/images/flavors/ranch.png', '🥣'),
+  Flavor('پنیری', 'assets/images/flavors/cheese.png', '🧀'),
+  Flavor('گلپر لیمو', 'assets/images/flavors/golpar_lemon.png', '🍋'),
+];
 
 class KhoshkbarApp extends StatelessWidget {
   const KhoshkbarApp({super.key});
@@ -15,9 +42,7 @@ class KhoshkbarApp extends StatelessWidget {
       title: 'خشک بار',
       theme: ThemeData(
         fontFamily: 'Roboto',
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF174D32),
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: green),
         scaffoldBackgroundColor: const Color(0xFFF8F6EF),
         useMaterial3: true,
       ),
@@ -35,6 +60,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int selectedIndex = 0;
+  String selectedCategory = 'همه محصولات';
+  final List<CartItem> cart = [];
 
   final List<Map<String, dynamic>> products = [
     {'name': 'تخمه آفتابگردان', 'icon': '🌻', 'category': 'تخمه و دانه'},
@@ -59,54 +86,97 @@ class _HomePageState extends State<HomePage> {
     {'name': 'گندم حلیم پاک‌شده', 'icon': '🌾', 'category': 'غلات'},
   ];
 
-  final List<String> categories = [
-    'همه محصولات',
-    'تخمه و دانه',
-    'آجیل و خشکبار',
-    'حبوبات',
-    'غلات',
+  final categories = [
+    'همه محصولات', 'تخمه و دانه', 'آجیل و خشکبار', 'حبوبات', 'غلات'
   ];
 
-  String selectedCategory = 'همه محصولات';
+  Future<void> openSunflower() async {
+    final result = await Navigator.push<List<CartItem>>(
+      context,
+      MaterialPageRoute(builder: (_) => const SunflowerPage()),
+    );
+
+    if (result == null || result.isEmpty) return;
+
+    setState(() {
+      for (final item in result) {
+        final index = cart.indexWhere((e) => e.name == item.name);
+        if (index == -1) {
+          cart.add(item);
+        } else {
+          cart[index] = CartItem(
+            item.name,
+            cart[index].kg + item.kg,
+          );
+        }
+      }
+    });
+  }
+
+  Future<void> openCart() async {
+    final result = await Navigator.push<List<CartItem>>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CartPage(items: List.of(cart)),
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        cart
+          ..clear()
+          ..addAll(result);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final visibleProducts = products.where((product) {
-      return selectedCategory == 'همه محصولات' ||
-          product['category'] == selectedCategory;
-    }).toList();
+    final visible = products.where((p) =>
+      selectedCategory == 'همه محصولات' ||
+      p['category'] == selectedCategory).toList();
 
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: const Color(0xFF174D32),
-          foregroundColor: const Color(0xFFFFD778),
-          title: const Text(
-            'خشک بار',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
+          backgroundColor: green,
+          foregroundColor: gold,
           centerTitle: true,
+          title: const Text('خشک بار'),
+          actions: [
+            IconButton(
+              onPressed: openCart,
+              icon: Badge(
+                isLabelVisible: cart.isNotEmpty,
+                label: Text('${cart.length}'),
+                child: const Icon(Icons.shopping_cart_outlined),
+              ),
+            ),
+          ],
         ),
         body: selectedIndex == 0
-            ? _buildHome(visibleProducts)
+            ? homeBody(visible)
             : selectedIndex == 1
-                ? _buildProducts(visibleProducts)
-                : _buildSimplePage(
-                    selectedIndex == 2 ? 'سفارش‌های من' : 'حساب کاربری من',
-                    selectedIndex == 2
-                        ? 'سفارش‌های شما در این بخش نمایش داده می‌شود.'
-                        : 'اطلاعات حساب کاربری شما در این بخش قرار می‌گیرد.',
+                ? productBody(visible)
+                : Center(
+                    child: Text(
+                      selectedIndex == 2
+                          ? 'سفارش‌های من'
+                          : 'حساب کاربری من',
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
         bottomNavigationBar: NavigationBar(
           selectedIndex: selectedIndex,
-          onDestinationSelected: (index) {
-            setState(() => selectedIndex = index);
-          },
+          onDestinationSelected: (i) =>
+              setState(() => selectedIndex = i),
           destinations: const [
             NavigationDestination(
               icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home),
               label: 'خانه',
             ),
             NavigationDestination(
@@ -127,22 +197,19 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildHome(List<Map<String, dynamic>> items) {
+  Widget homeBody(List<Map<String, dynamic>> items) {
     return Stack(
       children: [
         Positioned.fill(
           child: Image.asset(
             'file_00000000891881f4bdbf68c947edd9bc.png',
             fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              return Container(color: const Color(0xFFF8F6EF));
-            },
+            errorBuilder: (_, __, ___) =>
+                Container(color: const Color(0xFFF8F6EF)),
           ),
         ),
         Positioned.fill(
-          child: Container(
-            color: Colors.white.withOpacity(0.78),
-          ),
+          child: Container(color: Colors.white.withOpacity(.78)),
         ),
         ListView(
           padding: const EdgeInsets.all(16),
@@ -150,7 +217,7 @@ class _HomePageState extends State<HomePage> {
             Container(
               padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
-                color: const Color(0xFF174D32).withOpacity(0.94),
+                color: green.withOpacity(.94),
                 borderRadius: BorderRadius.circular(22),
               ),
               child: const Column(
@@ -159,7 +226,7 @@ class _HomePageState extends State<HomePage> {
                   Text(
                     'کیفیت عالی، خرید مطمئن',
                     style: TextStyle(
-                      color: Color(0xFFFFD778),
+                      color: gold,
                       fontSize: 23,
                       fontWeight: FontWeight.bold,
                     ),
@@ -167,7 +234,7 @@ class _HomePageState extends State<HomePage> {
                   SizedBox(height: 12),
                   Text(
                     'فروش انواع تخمه، آجیل، حبوبات و غلات',
-                    style: TextStyle(color: Colors.white, fontSize: 15),
+                    style: TextStyle(color: Colors.white),
                   ),
                   SizedBox(height: 8),
                   Text(
@@ -177,40 +244,27 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 22),
             const Text(
               'دسته‌بندی محصولات',
               style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: categories.map((category) {
-                return ChoiceChip(
-                  label: Text(category),
-                  selected: selectedCategory == category,
-                  onSelected: (_) {
-                    setState(() => selectedCategory = category);
-                  },
-                  selectedColor: const Color(0xFFD8B65C),
-                );
-              }).toList(),
-            ),
+            categoryChips(),
             const SizedBox(height: 22),
             const Text(
               'محصولات فروشگاه',
               style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            _productGrid(items),
+            productGrid(items),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildProducts(List<Map<String, dynamic>> items) {
+  Widget productBody(List<Map<String, dynamic>> items) {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -219,41 +273,42 @@ class _HomePageState extends State<HomePage> {
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 15),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: categories.map((category) {
-            return ChoiceChip(
-              label: Text(category),
-              selected: selectedCategory == category,
-              onSelected: (_) {
-                setState(() => selectedCategory = category);
-              },
-            );
-          }).toList(),
-        ),
+        categoryChips(),
         const SizedBox(height: 18),
-        _productGrid(items),
+        productGrid(items),
       ],
     );
   }
 
-  Widget _productGrid(List<Map<String, dynamic>> items) {
+  Widget categoryChips() {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: categories.map((category) => ChoiceChip(
+        label: Text(category),
+        selected: selectedCategory == category,
+        onSelected: (_) => setState(() => selectedCategory = category),
+        selectedColor: const Color(0xFFD8B65C),
+      )).toList(),
+    );
+  }
+
+  Widget productGrid(List<Map<String, dynamic>> items) {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: items.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 0.95,
+        childAspectRatio: .95,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
       ),
       itemBuilder: (context, index) {
         final product = items[index];
+        final isSunflower = product['name'] == 'تخمه آفتابگردان';
 
         return Card(
-          elevation: 1,
           color: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
@@ -261,54 +316,34 @@ class _HomePageState extends State<HomePage> {
           ),
           clipBehavior: Clip.antiAlias,
           child: InkWell(
-            onTap: () {
-              if (product['name'] == 'تخمه آفتابگردان') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const SunflowerPage(),
-                  ),
-                );
-              }
-            },
+            onTap: isSunflower ? openSunflower : null,
             child: Padding(
               padding: const EdgeInsets.all(12),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    product['icon'],
-                    style: const TextStyle(fontSize: 38),
-                  ),
+                  Text(product['icon'],
+                      style: const TextStyle(fontSize: 38)),
                   const SizedBox(height: 12),
                   Text(
                     product['name'],
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
                   const Text(
                     'قیمت: استعلام از فروشگاه',
-                    style: TextStyle(
-                      color: Color(0xFF777777),
-                      fontSize: 11,
-                    ),
-                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey, fontSize: 11),
                   ),
-                  if (product['name'] == 'تخمه آفتابگردان') ...[
-                    const SizedBox(height: 5),
+                  if (isSunflower)
                     const Text(
                       'مشاهده ۸ طعم ←',
                       style: TextStyle(
-                        color: Color(0xFF174D32),
-                        fontSize: 11,
+                        color: green,
                         fontWeight: FontWeight.bold,
+                        fontSize: 11,
                       ),
                     ),
-                  ],
                 ],
               ),
             ),
@@ -317,246 +352,369 @@ class _HomePageState extends State<HomePage> {
       },
     );
   }
-
-  Widget _buildSimplePage(String title, String message) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.storefront_outlined,
-              size: 60,
-              color: Color(0xFF174D32),
-            ),
-            const SizedBox(height: 18),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(message, textAlign: TextAlign.center),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
-// صفحه اختصاصی ۸ مدل تخمه آفتابگردان
-
-class SunflowerPage extends StatelessWidget {
+class SunflowerPage extends StatefulWidget {
   const SunflowerPage({super.key});
 
-  final List<Map<String, String>> varieties = const [
-    {'name': 'تخمه خام', 'emoji': '🌻'},
-    {'name': 'تخمه شور', 'emoji': '🧂'},
-    {'name': 'تخمه ساده', 'emoji': '🌻'},
-    {'name': 'تخمه گلپر', 'emoji': '🌿'},
-    {'name': 'تخمه لیمو', 'emoji': '🍋'},
-    {'name': 'تخمه سس رنچ', 'emoji': '🥣'},
-    {'name': 'تخمه پنیری', 'emoji': '🧀'},
-    {'name': 'تخمه گلپر لیمو', 'emoji': '🍋'},
-  ];
-
   @override
-  Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF8F6EF),
-        appBar: AppBar(
-          backgroundColor: const Color(0xFF087B35),
-          foregroundColor: Colors.white,
-          title: const Text(
-            'تخمه آفتابگردان',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          centerTitle: true,
-        ),
-        body: Stack(
-          children: [
-            Positioned.fill(
-              child: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Color(0xFFFFF9E9),
-                      Color(0xFFE7EFCB),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            GridView.builder(
-              padding: const EdgeInsets.all(14),
-              itemCount: varieties.length,
-              gridDelegate:
-                  const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.88,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-              ),
-              itemBuilder: (context, index) {
-                final item = varieties[index];
+  State<SunflowerPage> createState() => _SunflowerPageState();
+}
 
-                return Card(
-                  elevation: 2,
-                  color: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    side: const BorderSide(
-                      color: Color(0xFFE5DCC4),
-                    ),
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: InkWell(
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            '${item['name']} انتخاب شد',
-                          ),
-                        ),
-                      );
-                    },
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                Container(
-                                  width: double.infinity,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFFFF5E4),
-                                    borderRadius:
-                                        BorderRadius.circular(15),
-                                  ),
-                                ),
-                                const SeedIllustration(),
-                                Positioned(
-                                  top: 8,
-                                  left: 8,
-                                  child: Text(
-                                    item['emoji']!,
-                                    style: const TextStyle(fontSize: 23),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        Container(
-                          width: double.infinity,
-                          margin: const EdgeInsets.fromLTRB(9, 0, 9, 10),
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 10,
-                            horizontal: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF087B35),
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          child: Text(
-                            item['name']!,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
+class _SunflowerPageState extends State<SunflowerPage> {
+  final Map<String, int> selected = {};
+
+  Future<void> chooseFlavor(Flavor flavor) async {
+    int weight = selected[flavor.name] ?? 5;
+    bool custom = false;
+    final controller = TextEditingController();
+
+    final result = await showModalBottomSheet<int>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, update) {
+            return Padding(
+              padding: EdgeInsets.fromLTRB(
+                20, 24, 20,
+                MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'وزن ${flavor.name}',
+                    style: const TextStyle(
+                      fontSize: 21,
+                      fontWeight: FontWeight.bold,
+                      color: green,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Wrap(
+                    spacing: 10,
+                    children: [5, 10, 20].map((kg) {
+                      return ChoiceChip(
+                        label: Text('$kg کیلو'),
+                        selected: !custom && weight == kg,
+                        onSelected: (_) => update(() {
+                          custom = false;
+                          weight = kg;
+                        }),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 15),
+                  TextField(
+                    controller: controller,
+                    keyboardType: TextInputType.number,
+                    textDirection: TextDirection.rtl,
+                    decoration: InputDecoration(
+                      labelText: 'وزن دلخواه (بیشتر از ۲۰ کیلو)',
+                      suffixText: 'کیلوگرم',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onChanged: (value) {
+                      update(() => custom = true);
+                    },
+                  ),
+                  const SizedBox(height: 18),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: green,
+                        padding: const EdgeInsets.all(14),
+                      ),
+                      onPressed: () {
+                        if (custom) {
+                          final value = int.tryParse(controller.text);
+                          if (value == null || value <= 20) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('وزن دلخواه باید بیشتر از ۲۰ کیلو باشد'),
+                              ),
+                            );
+                            return;
+                          }
+                          Navigator.pop(sheetContext, value);
+                        } else {
+                          Navigator.pop(sheetContext, weight);
+                        }
+                      },
+                      child: const Text(
+                        'تأیید وزن',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
-  }
-}
 
-// تصویرسازی تخمه پوست‌دار راه‌راه
+    controller.dispose();
 
-class SeedIllustration extends StatelessWidget {
-  const SeedIllustration({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      size: const Size(150, 110),
-      painter: SeedPainter(),
-    );
-  }
-}
-
-class SeedPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final positions = [
-      [0.30, 0.40, -0.45],
-      [0.52, 0.30, 0.25],
-      [0.70, 0.48, -0.20],
-      [0.40, 0.68, 0.40],
-      [0.64, 0.72, -0.50],
-    ];
-
-    for (final position in positions) {
-      final x = position[0] * size.width;
-      final y = position[1] * size.height;
-      final angle = position[2];
-
-      canvas.save();
-      canvas.translate(x, y);
-      canvas.rotate(angle);
-
-      final seedPaint = Paint()
-        ..color = const Color(0xFF34251D)
-        ..style = PaintingStyle.fill;
-
-      final outlinePaint = Paint()
-        ..color = const Color(0xFFB89A6B)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5;
-
-      final stripePaint = Paint()
-        ..color = const Color(0xFFF5E5C6)
-        ..strokeWidth = 2.2
-        ..strokeCap = StrokeCap.round;
-
-      final rect = Rect.fromCenter(
-        center: Offset.zero,
-        width: 22,
-        height: 43,
-      );
-
-      canvas.drawOval(rect, seedPaint);
-      canvas.drawOval(rect, outlinePaint);
-      canvas.drawLine(
-        const Offset(0, -16),
-        const Offset(0, 16),
-        stripePaint,
-      );
-
-      canvas.restore();
+    if (result != null) {
+      setState(() => selected[flavor.name] = result);
     }
   }
 
   @override
-  bool shouldRepaint(covariant SeedPainter oldDelegate) => false;
+  Widget build(BuildContext context) {
+    final selectedItems = selected.entries
+        .map((e) => CartItem('تخمه آفتابگردان - ${e.key}', e.value))
+        .toList();
+
+    final totalKg = selected.values.fold<int>(0, (a, b) => a + b);
+
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: green,
+          foregroundColor: Colors.white,
+          centerTitle: true,
+          title: const Text('انتخاب طعم تخمه'),
+        ),
+        body: Column(
+          children: [
+            Expanded(
+              child: GridView.builder(
+                padding: const EdgeInsets.all(12),
+                itemCount: flavors.length,
+                gridDelegate:
+                    const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: .78,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                ),
+                itemBuilder: (context, index) {
+                  final flavor = flavors[index];
+                  final isSelected = selected.containsKey(flavor.name);
+
+                  return InkWell(
+                    borderRadius: BorderRadius.circular(18),
+                    onTap: () => chooseFlavor(flavor),
+                    child: Card(
+                      clipBehavior: Clip.antiAlias,
+                      elevation: isSelected ? 5 : 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                        side: BorderSide(
+                          color: isSelected ? green : const Color(0xFFE5DCC4),
+                          width: isSelected ? 3 : 1,
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                Image.asset(
+                                  flavor.image,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => Container(
+                                    color: const Color(0xFFFFF1D9),
+                                    child: Center(
+                                      child: Text(
+                                        '${flavor.emoji}\nگونی تخمه',
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(fontSize: 25),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                if (isSelected)
+                                  const Positioned(
+                                    top: 8,
+                                    left: 8,
+                                    child: CircleAvatar(
+                                      backgroundColor: green,
+                                      child: Icon(
+                                        Icons.check,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            width: double.infinity,
+                            color: isSelected ? green : const Color(0xFFFFE5BD),
+                            padding: const EdgeInsets.all(9),
+                            child: Column(
+                              children: [
+                                Text(
+                                  flavor.name,
+                                  style: TextStyle(
+                                    color: isSelected ? Colors.white : green,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                if (isSelected)
+                                  Text(
+                                    '${selected[flavor.name]} کیلو',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                border: Border(top: BorderSide(color: Color(0xFFE5DCC4))),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    'انتخاب شده: ${selected.length} طعم | مجموع وزن: $totalKg کیلو',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: green,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: green,
+                        padding: const EdgeInsets.all(15),
+                      ),
+                      onPressed: selected.isEmpty
+                          ? null
+                          : () => Navigator.pop(context, selectedItems),
+                      icon: const Icon(Icons.shopping_cart, color: Colors.white),
+                      label: const Text(
+                        'افزودن انتخاب‌ها به سبد خرید',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                  const Text(
+                    'حداقل سفارش هر طعم ۵ کیلوگرم است',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class CartPage extends StatefulWidget {
+  final List<CartItem> items;
+
+  const CartPage({super.key, required this.items});
+
+  @override
+  State<CartPage> createState() => _CartPageState();
+}
+
+class _CartPageState extends State<CartPage> {
+  late List<CartItem> items;
+
+  @override
+  void initState() {
+    super.initState();
+    items = List.of(widget.items);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final total = items.fold<int>(0, (sum, item) => sum + item.kg);
+
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('سبد خرید'),
+          backgroundColor: green,
+          foregroundColor: Colors.white,
+        ),
+        body: Column(
+          children: [
+            Expanded(
+              child: items.isEmpty
+                  ? const Center(child: Text('سبد خرید خالی است'))
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(12),
+                      itemCount: items.length,
+                      itemBuilder: (context, index) {
+                        final item = items[index];
+                        return Card(
+                          child: ListTile(
+                            title: Text(item.name),
+                            subtitle: Text('${item.kg} کیلوگرم'),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete_outline, color: Colors.red),
+                              onPressed: () => setState(() => items.removeAt(index)),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Text(
+                    'مجموع وزن: $total کیلوگرم',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: green,
+                        padding: const EdgeInsets.all(15),
+                      ),
+                      onPressed: () => Navigator.pop(context, items),
+                      child: const Text(
+                        'ثبت تغییرات سبد خرید',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
