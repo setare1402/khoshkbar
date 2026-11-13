@@ -20,17 +20,15 @@ class Flavor {
   const Flavor(this.name, this.image, this.emoji);
 }
 
-const flavors = [
-  Flavor('لیمو', 'assets/images/flavors/lemon.png', '🍋'),
-  Flavor('گلپر لیمو', 'assets/images/flavors/golpar_lemon.png', '🍋'),
-  Flavor('سس رنچ', 'assets/images/flavors/ranch.png', '🥣'),
-  Flavor('پنیری', 'assets/images/flavors/cheese.png', '🧀'),
-  Flavor('گلپر', 'assets/images/flavors/golpar.png', '🌿'),
-  Flavor('شکری', 'assets/images/flavors/sugar.png', '🍬'),
-  Flavor('نمکی ساده', 'assets/images/flavors/salty.png', '🧂'),
-  Flavor('خام', 'assets/images/flavors/raw.png', '🌻'),
-];
-
+const flavors = Image.asset(
+  'assets/images/file_00000000f0e081f4a087f81d600246d7 (1).png',
+  fit: BoxFit.contain,
+  errorBuilder: (_, __, ___) {
+    return const Center(
+      child: Text('🌻', style: TextStyle(fontSize: 48)),
+    );
+  },
+),
 // سه تصویر مستقل برای تخمه کدو
 const pumpkinFlavors = [
   Flavor(
