@@ -1,52 +1,31 @@
 
-name: Build Khoshkbar Android APK
+name: khoshkbar_takhme_ala
+description: Customer app and central management starter for Khoshkbar va Tokhmeh Ala
+publish_to: 'none'
+version: 1.0.0+1
 
-on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
+environment:
+  sdk: '^3.14.0'
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
 
-    steps:
-      - name: Checkout source
-        uses: actions/checkout@v4
+dev_dependencies:
+  flutter_launcher_icons: ^0.14.4
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
+flutter:
+  uses-material-design: true
+  assets:
+    - 123Gallery.jpg
+    - assets/images/
+    - file_00000000f0e081f4a087f81d600246d7 (1).png
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-
-      - name: Create Android project files
-        run: flutter create . --platforms=android --project-name khoshkbar_takhme_ala
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Check image
-        run: |
-          if [ ! -f "123Gallery.jpg" ]; then
-            echo "ERROR: 123Gallery.jpg not found in repository root"
-            exit 1
-          fi
-
-      - name: Generate app icons
-        run: dart run flutter_launcher_icons
-
-      - name: Build APK
-        run: flutter build apk --release
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Khoshkbar-Android-APK
-          path: build/app/outputs/flutter-apk/app-release.apk
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "123Gallery.jpg"
