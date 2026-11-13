@@ -34,8 +34,8 @@ jobs:
 
       - name: Check app icon image
         run: |
-          if [ ! -f "file_00000000104081f484a1e4b2f8765fdf.png" ]; then
-            echo "ERROR: App icon image not found!"
+          if [ ! -f "assets/images/123Gallery.jpg" ]; then
+            echo "ERROR: 123Gallery.jpg not found in assets/images/"
             exit 1
           fi
 
