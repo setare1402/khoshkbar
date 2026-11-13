@@ -251,6 +251,7 @@ class _HomePageState extends State<HomePage> {
       ),
       itemBuilder: (context, index) {
         final product = items[index];
+
         return Card(
           elevation: 1,
           color: Colors.white,
@@ -258,34 +259,58 @@ class _HomePageState extends State<HomePage> {
             borderRadius: BorderRadius.circular(18),
             side: const BorderSide(color: Color(0xFFE5DCC4)),
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  product['icon'],
-                  style: const TextStyle(fontSize: 38),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  product['name'],
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: () {
+              if (product['name'] == 'تخمه آفتابگردان') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SunflowerPage(),
                   ),
-                ),
-                const SizedBox(height: 10),
-                const Text(
-                  'قیمت: استعلام از فروشگاه',
-                  style: TextStyle(
-                    color: Color(0xFF777777),
-                    fontSize: 11,
+                );
+              }
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    product['icon'],
+                    style: const TextStyle(fontSize: 38),
                   ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
+                  const SizedBox(height: 12),
+                  Text(
+                    product['name'],
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'قیمت: استعلام از فروشگاه',
+                    style: TextStyle(
+                      color: Color(0xFF777777),
+                      fontSize: 11,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  if (product['name'] == 'تخمه آفتابگردان') ...[
+                    const SizedBox(height: 5),
+                    const Text(
+                      'مشاهده ۸ طعم ←',
+                      style: TextStyle(
+                        color: Color(0xFF174D32),
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
           ),
         );
@@ -320,4 +345,218 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+}
+
+// صفحه اختصاصی ۸ مدل تخمه آفتابگردان
+
+class SunflowerPage extends StatelessWidget {
+  const SunflowerPage({super.key});
+
+  final List<Map<String, String>> varieties = const [
+    {'name': 'تخمه خام', 'emoji': '🌻'},
+    {'name': 'تخمه شور', 'emoji': '🧂'},
+    {'name': 'تخمه ساده', 'emoji': '🌻'},
+    {'name': 'تخمه گلپر', 'emoji': '🌿'},
+    {'name': 'تخمه لیمو', 'emoji': '🍋'},
+    {'name': 'تخمه سس رنچ', 'emoji': '🥣'},
+    {'name': 'تخمه پنیری', 'emoji': '🧀'},
+    {'name': 'تخمه گلپر لیمو', 'emoji': '🍋'},
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF8F6EF),
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF087B35),
+          foregroundColor: Colors.white,
+          title: const Text(
+            'تخمه آفتابگردان',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          centerTitle: true,
+        ),
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0xFFFFF9E9),
+                      Color(0xFFE7EFCB),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            GridView.builder(
+              padding: const EdgeInsets.all(14),
+              itemCount: varieties.length,
+              gridDelegate:
+                  const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.88,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+              ),
+              itemBuilder: (context, index) {
+                final item = varieties[index];
+
+                return Card(
+                  elevation: 2,
+                  color: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    side: const BorderSide(
+                      color: Color(0xFFE5DCC4),
+                    ),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            '${item['name']} انتخاب شد',
+                          ),
+                        ),
+                      );
+                    },
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Container(
+                                  width: double.infinity,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFFF5E4),
+                                    borderRadius:
+                                        BorderRadius.circular(15),
+                                  ),
+                                ),
+                                const SeedIllustration(),
+                                Positioned(
+                                  top: 8,
+                                  left: 8,
+                                  child: Text(
+                                    item['emoji']!,
+                                    style: const TextStyle(fontSize: 23),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Container(
+                          width: double.infinity,
+                          margin: const EdgeInsets.fromLTRB(9, 0, 9, 10),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF087B35),
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          child: Text(
+                            item['name']!,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// تصویرسازی تخمه پوست‌دار راه‌راه
+
+class SeedIllustration extends StatelessWidget {
+  const SeedIllustration({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      size: const Size(150, 110),
+      painter: SeedPainter(),
+    );
+  }
+}
+
+class SeedPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final positions = [
+      [0.30, 0.40, -0.45],
+      [0.52, 0.30, 0.25],
+      [0.70, 0.48, -0.20],
+      [0.40, 0.68, 0.40],
+      [0.64, 0.72, -0.50],
+    ];
+
+    for (final position in positions) {
+      final x = position[0] * size.width;
+      final y = position[1] * size.height;
+      final angle = position[2];
+
+      canvas.save();
+      canvas.translate(x, y);
+      canvas.rotate(angle);
+
+      final seedPaint = Paint()
+        ..color = const Color(0xFF34251D)
+        ..style = PaintingStyle.fill;
+
+      final outlinePaint = Paint()
+        ..color = const Color(0xFFB89A6B)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5;
+
+      final stripePaint = Paint()
+        ..color = const Color(0xFFF5E5C6)
+        ..strokeWidth = 2.2
+        ..strokeCap = StrokeCap.round;
+
+      final rect = Rect.fromCenter(
+        center: Offset.zero,
+        width: 22,
+        height: 43,
+      );
+
+      canvas.drawOval(rect, seedPaint);
+      canvas.drawOval(rect, outlinePaint);
+      canvas.drawLine(
+        const Offset(0, -16),
+        const Offset(0, 16),
+        stripePaint,
+      );
+
+      canvas.restore();
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant SeedPainter oldDelegate) => false;
 }
