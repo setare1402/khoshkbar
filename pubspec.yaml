@@ -1,19 +1,26 @@
-name: khoshkbar_takhme_ala
+name: 
+  name: khoshkbar_takhme_ala
 description: Customer app and central management starter for Khoshkbar va Tokhmeh Ala
 publish_to: 'none'
 version: 1.0.0+1
+
 environment:
   sdk: '>=3.3.0 <4.0.0'
+
 dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-dev_dependencies:  flutter_launcher_icons: ^0.14.4
+
+dev_dependencies:
+  flutter_launcher_icons: ^0.14.4
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+
 flutter:
   uses-material-design: true
+
 flutter_launcher_icons:
   android: true
   ios: false
