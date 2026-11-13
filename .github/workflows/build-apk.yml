@@ -9,6 +9,7 @@ on:
 
 jobs:
   build:
+    name: Build Khoshkbar Android APK
     runs-on: ubuntu-latest
 
     steps:
@@ -25,19 +26,26 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: '3.50.0'
+          cache: true
+
+      - name: Check required files
+        run: |
+          if [ ! -f "pubspec.yaml" ]; then
+            echo "ERROR: pubspec.yaml not found!"
+            exit 1
+          fi
+
+          if [ ! -f "123Gallery.jpg" ]; then
+            echo "ERROR: 123Gallery.jpg not found in repository root!"
+            exit 1
+          fi
 
       - name: Create Android project files
-        run: flutter create . --platforms=android --project-name khoshkbar_takhme_ala
+        run: flutter create . --platforms=android --project-name khoshkbar_takhme_ala --no-pub
 
       - name: Install dependencies
         run: flutter pub get
-
-      - name: Check app icon image
-        run: |
-          if [ ! -f "assets/images/123Gallery.jpg" ]; then
-            echo "ERROR: 123Gallery.jpg not found in assets/images/"
-            exit 1
-          fi
 
       - name: Generate app icons
         run: dart run flutter_launcher_icons
@@ -50,3 +58,4 @@ jobs:
         with:
           name: Khoshkbar-Android-APK
           path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
