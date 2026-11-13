@@ -9,7 +9,6 @@ const gold = Color(0xFFFFD778);
 class CartItem {
   final String name;
   final int kg;
-
   const CartItem(this.name, this.kg);
 }
 
@@ -17,23 +16,20 @@ class Flavor {
   final String name;
   final String image;
   final String emoji;
-
   const Flavor(this.name, this.image, this.emoji);
 }
 
-// هشت طعم تخمه آفتابگردان
 const flavors = [
-  Flavor('خام', 'assets/images/flavors/raw.png', '🌻'),
-  Flavor('شور', 'assets/images/flavors/salty.png', '🧂'),
-  Flavor('ساده', 'assets/images/flavors/plain.png', '🌻'),
-  Flavor('گلپر', 'assets/images/flavors/golpar.png', '🌿'),
   Flavor('لیمو', 'assets/images/flavors/lemon.png', '🍋'),
+  Flavor('گلپر لیمو', 'assets/images/flavors/golpar_lemon.png', '🍋'),
   Flavor('سس رنچ', 'assets/images/flavors/ranch.png', '🥣'),
   Flavor('پنیری', 'assets/images/flavors/cheese.png', '🧀'),
-  Flavor('گلپر لیمو', 'assets/images/flavors/golpar_lemon.png', '🍋'),
+  Flavor('گلپر', 'assets/images/flavors/golpar.png', '🌿'),
+  Flavor('شکری', 'assets/images/flavors/sugar.png', '🍬'),
+  Flavor('نمکی ساده', 'assets/images/flavors/salty.png', '🧂'),
+  Flavor('خام', 'assets/images/flavors/raw.png', '🌻'),
 ];
 
-// سه مدل تخمه کدو
 const pumpkinFlavors = [
   Flavor('ساده شور', 'assets/images/pumpkin.png', '🎃'),
   Flavor('دوآتیشه شور', 'assets/images/pumpkin.png', '🎃'),
@@ -69,10 +65,17 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int selectedIndex = 0;
   String selectedCategory = 'همه محصولات';
-
   final List<CartItem> cart = [];
 
-  final List<Map<String, dynamic>> products = [
+  final categories = [
+    'همه محصولات',
+    'تخمه و دانه',
+    'آجیل و خشکبار',
+    'حبوبات',
+    'غلات',
+  ];
+
+  final products = [
     {'name': 'تخمه آفتابگردان', 'icon': '🌻', 'category': 'تخمه و دانه'},
     {'name': 'تخمه کدو', 'icon': '🎃', 'category': 'تخمه و دانه'},
     {'name': 'تخمه ژاپنی', 'icon': '🌱', 'category': 'تخمه و دانه'},
@@ -95,33 +98,6 @@ class _HomePageState extends State<HomePage> {
     {'name': 'گندم حلیم پاک‌شده', 'icon': '🌾', 'category': 'غلات'},
   ];
 
-  final categories = [
-    'همه محصولات',
-    'تخمه و دانه',
-    'آجیل و خشکبار',
-    'حبوبات',
-    'غلات',
-  ];
-
-  // باز کردن صفحه انتخاب طعم آفتابگردان
-  Future<void> openSunflower() async {
-    await openFlavorPage(
-      productName: 'تخمه آفتابگردان',
-      pageTitle: 'انتخاب طعم تخمه آفتابگردان',
-      options: flavors,
-    );
-  }
-
-  // باز کردن صفحه انتخاب مدل تخمه کدو
-  Future<void> openPumpkin() async {
-    await openFlavorPage(
-      productName: 'تخمه کدو',
-      pageTitle: 'انتخاب مدل تخمه کدو',
-      options: pumpkinFlavors,
-    );
-  }
-
-  // صفحه مشترک انتخاب طعم و مدل
   Future<void> openFlavorPage({
     required String productName,
     required String pageTitle,
@@ -142,38 +118,26 @@ class _HomePageState extends State<HomePage> {
 
     setState(() {
       for (final item in result) {
-        final index = cart.indexWhere(
-          (e) => e.name == item.name,
-        );
-
-        if (index == -1) {
+        final i = cart.indexWhere((e) => e.name == item.name);
+        if (i < 0) {
           cart.add(item);
         } else {
-          cart[index] = CartItem(
-            item.name,
-            cart[index].kg + item.kg,
-          );
+          cart[i] = CartItem(item.name, cart[i].kg + item.kg);
         }
       }
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('محصولات به سبد خرید اضافه شدند'),
-      ),
+      const SnackBar(content: Text('محصولات به سبد خرید اضافه شدند')),
     );
   }
 
   Future<void> openCart() async {
     final result = await Navigator.push<List<CartItem>>(
       context,
-      MaterialPageRoute(
-        builder: (_) => CartPage(items: List.of(cart)),
-      ),
+      MaterialPageRoute(builder: (_) => CartPage(items: List.of(cart))),
     );
-
     if (result == null || !mounted) return;
-
     setState(() {
       cart
         ..clear()
@@ -213,9 +177,7 @@ class _HomePageState extends State<HomePage> {
                 ? productBody(visible)
                 : Center(
                     child: Text(
-                      selectedIndex == 2
-                          ? 'سفارش‌های من'
-                          : 'حساب کاربری من',
+                      selectedIndex == 2 ? 'سفارش‌های من' : 'حساب کاربری من',
                       style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
@@ -224,47 +186,35 @@ class _HomePageState extends State<HomePage> {
                   ),
         bottomNavigationBar: NavigationBar(
           selectedIndex: selectedIndex,
-          onDestinationSelected: (i) {
-            setState(() => selectedIndex = i);
-          },
+          onDestinationSelected: (i) => setState(() => selectedIndex = i),
           destinations: const [
             NavigationDestination(
-              icon: Icon(Icons.home_outlined),
-              label: 'خانه',
-            ),
+              icon: Icon(Icons.home_outlined), label: 'خانه'),
             NavigationDestination(
-              icon: Icon(Icons.inventory_2_outlined),
-              label: 'محصولات',
-            ),
+              icon: Icon(Icons.inventory_2_outlined), label: 'محصولات'),
             NavigationDestination(
-              icon: Icon(Icons.receipt_long_outlined),
-              label: 'سفارش‌ها',
-            ),
+              icon: Icon(Icons.receipt_long_outlined), label: 'سفارش‌ها'),
             NavigationDestination(
-              icon: Icon(Icons.person_outline),
-              label: 'حساب من',
-            ),
+              icon: Icon(Icons.person_outline), label: 'حساب من'),
           ],
         ),
       ),
     );
   }
 
-  Widget homeBody(List<Map<String, dynamic>> items) {
+  Widget homeBody(List<Map<String, String>> items) {
     return Stack(
       children: [
         Positioned.fill(
           child: Image.asset(
-            'file_00000000891881f4bdbf68c947edd9bc.png',
+            'assets/images/sunflower_field.png',
             fit: BoxFit.cover,
             errorBuilder: (_, __, ___) =>
                 Container(color: const Color(0xFFF8F6EF)),
           ),
         ),
         Positioned.fill(
-          child: Container(
-            color: Colors.white.withOpacity(.78),
-          ),
+          child: Container(color: Colors.white.withOpacity(.78)),
         ),
         ListView(
           padding: const EdgeInsets.all(16),
@@ -287,36 +237,22 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   SizedBox(height: 12),
-                  Text(
-                    'فروش انواع تخمه، آجیل، حبوبات و غلات',
-                    style: TextStyle(color: Colors.white),
-                  ),
+                  Text('فروش انواع تخمه، آجیل، حبوبات و غلات',
+                      style: TextStyle(color: Colors.white)),
                   SizedBox(height: 8),
-                  Text(
-                    'سفارش عمده و جزئی',
-                    style: TextStyle(color: Colors.white70),
-                  ),
+                  Text('سفارش عمده و جزئی',
+                      style: TextStyle(color: Colors.white70)),
                 ],
               ),
             ),
             const SizedBox(height: 22),
-            const Text(
-              'دسته‌بندی محصولات',
-              style: TextStyle(
-                fontSize: 19,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            const Text('دسته‌بندی محصولات',
+                style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             categoryChips(),
             const SizedBox(height: 22),
-            const Text(
-              'محصولات فروشگاه',
-              style: TextStyle(
-                fontSize: 19,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            const Text('محصولات فروشگاه',
+                style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             productGrid(items),
           ],
@@ -325,17 +261,12 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget productBody(List<Map<String, dynamic>> items) {
+  Widget productBody(List<Map<String, String>> items) {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        const Text(
-          'فهرست محصولات',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        const Text('فهرست محصولات',
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
         const SizedBox(height: 15),
         categoryChips(),
         const SizedBox(height: 18),
@@ -348,20 +279,16 @@ class _HomePageState extends State<HomePage> {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: categories.map((category) {
-        return ChoiceChip(
-          label: Text(category),
-          selected: selectedCategory == category,
-          onSelected: (_) {
-            setState(() => selectedCategory = category);
-          },
-          selectedColor: const Color(0xFFD8B65C),
-        );
-      }).toList(),
+      children: categories.map((category) => ChoiceChip(
+        label: Text(category),
+        selected: selectedCategory == category,
+        onSelected: (_) => setState(() => selectedCategory = category),
+        selectedColor: const Color(0xFFD8B65C),
+      )).toList(),
     );
   }
 
-  Widget productGrid(List<Map<String, dynamic>> items) {
+  Widget productGrid(List<Map<String, String>> items) {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -374,7 +301,7 @@ class _HomePageState extends State<HomePage> {
       ),
       itemBuilder: (context, index) {
         final product = items[index];
-        final name = product['name'];
+        final name = product['name']!;
         final isSunflower = name == 'تخمه آفتابگردان';
         final isPumpkin = name == 'تخمه کدو';
 
@@ -387,53 +314,53 @@ class _HomePageState extends State<HomePage> {
           clipBehavior: Clip.antiAlias,
           child: InkWell(
             onTap: isSunflower
-                ? openSunflower
+                ? () => openFlavorPage(
+                    productName: name,
+                    pageTitle: 'انتخاب طعم تخمه آفتابگردان',
+                    options: flavors)
                 : isPumpkin
-                    ? openPumpkin
+                    ? () => openFlavorPage(
+                        productName: name,
+                        pageTitle: 'انتخاب مدل تخمه کدو',
+                        options: pumpkinFlavors)
                     : null,
             child: Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(10),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    product['icon'],
-                    style: const TextStyle(fontSize: 38),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    name,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'قیمت: استعلام از فروشگاه',
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 11,
-                    ),
-                  ),
                   if (isSunflower)
-                    const Text(
-                      'مشاهده ۸ طعم ←',
-                      style: TextStyle(
-                        color: green,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 11,
+                    SizedBox(
+                      height: 105,
+                      width: double.infinity,
+                      child: Image.asset(
+                        'assets/images/sunflower_flavors_icon.png',
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => const Center(
+                          child: Text('🌻', style: TextStyle(fontSize: 48)),
+                        ),
                       ),
-                    ),
+                    )
+                  else
+                    Text(product['icon']!,
+                        style: const TextStyle(fontSize: 42)),
+                  const SizedBox(height: 10),
+                  Text(name,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  const Text('قیمت: استعلام از فروشگاه',
+                      style: TextStyle(color: Colors.grey, fontSize: 11)),
+                  if (isSunflower)
+                    const Text('مشاهده ۸ طعم ←',
+                        style: TextStyle(
+                            color: green, fontWeight: FontWeight.bold,
+                            fontSize: 11)),
                   if (isPumpkin)
-                    const Text(
-                      'مشاهده ۳ مدل ←',
-                      style: TextStyle(
-                        color: green,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 11,
-                      ),
-                    ),
+                    const Text('مشاهده ۳ مدل ←',
+                        style: TextStyle(
+                            color: green, fontWeight: FontWeight.bold,
+                            fontSize: 11)),
                 ],
               ),
             ),
@@ -443,8 +370,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-
-// صفحه مشترک انتخاب طعم آفتابگردان و مدل تخمه کدو
 
 class FlavorPage extends StatefulWidget {
   final String productName;
@@ -474,128 +399,91 @@ class _FlavorPageState extends State<FlavorPage> {
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(24),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (context, update) => Padding(
+          padding: EdgeInsets.fromLTRB(
+            20, 24, 20, MediaQuery.of(context).viewInsets.bottom + 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('وزن ${flavor.name}',
+                  style: const TextStyle(
+                      fontSize: 21, fontWeight: FontWeight.bold,
+                      color: green)),
+              const SizedBox(height: 18),
+              Wrap(
+                spacing: 10,
+                children: [5, 10, 20].map((kg) => ChoiceChip(
+                  label: Text('$kg کیلو'),
+                  selected: !custom && weight == kg,
+                  onSelected: (_) => update(() {
+                    custom = false;
+                    weight = kg;
+                    controller.clear();
+                  }),
+                )).toList(),
+              ),
+              const SizedBox(height: 15),
+              TextField(
+                controller: controller,
+                keyboardType: TextInputType.number,
+                textDirection: TextDirection.rtl,
+                decoration: InputDecoration(
+                  labelText: 'وزن دلخواه (بیشتر از ۲۰ کیلو)',
+                  suffixText: 'کیلوگرم',
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+                onChanged: (_) => update(() => custom = true),
+              ),
+              const SizedBox(height: 18),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: green,
+                    padding: const EdgeInsets.all(14),
+                  ),
+                  onPressed: () {
+                    if (custom) {
+                      final value = int.tryParse(controller.text);
+                      if (value == null || value <= 20) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                                'وزن دلخواه باید بیشتر از ۲۰ کیلو باشد'),
+                          ),
+                        );
+                        return;
+                      }
+                      Navigator.pop(sheetContext, value);
+                    } else {
+                      Navigator.pop(sheetContext, weight);
+                    }
+                  },
+                  child: const Text('تأیید وزن',
+                      style: TextStyle(color: Colors.white)),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-      builder: (sheetContext) {
-        return StatefulBuilder(
-          builder: (context, update) {
-            return Padding(
-              padding: EdgeInsets.fromLTRB(
-                20,
-                24,
-                20,
-                MediaQuery.of(context).viewInsets.bottom + 24,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'وزن ${flavor.name}',
-                    style: const TextStyle(
-                      fontSize: 21,
-                      fontWeight: FontWeight.bold,
-                      color: green,
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  Wrap(
-                    spacing: 10,
-                    children: [5, 10, 20].map((kg) {
-                      return ChoiceChip(
-                        label: Text('$kg کیلو'),
-                        selected: !custom && weight == kg,
-                        onSelected: (_) {
-                          update(() {
-                            custom = false;
-                            weight = kg;
-                            controller.clear();
-                          });
-                        },
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 15),
-                  TextField(
-                    controller: controller,
-                    keyboardType: TextInputType.number,
-                    textDirection: TextDirection.rtl,
-                    decoration: InputDecoration(
-                      labelText: 'وزن دلخواه (بیشتر از ۲۰ کیلو)',
-                      suffixText: 'کیلوگرم',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onChanged: (_) {
-                      update(() => custom = true);
-                    },
-                  ),
-                  const SizedBox(height: 18),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      style: FilledButton.styleFrom(
-                        backgroundColor: green,
-                        padding: const EdgeInsets.all(14),
-                      ),
-                      onPressed: () {
-                        if (custom) {
-                          final value = int.tryParse(controller.text);
-
-                          if (value == null || value <= 20) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'وزن دلخواه باید بیشتر از ۲۰ کیلو باشد',
-                                ),
-                              ),
-                            );
-                            return;
-                          }
-
-                          Navigator.pop(sheetContext, value);
-                        } else {
-                          Navigator.pop(sheetContext, weight);
-                        }
-                      },
-                      child: const Text(
-                        'تأیید وزن',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
     );
 
     controller.dispose();
-
     if (!mounted || result == null) return;
-
-    setState(() {
-      selected[flavor.name] = result;
-    });
+    setState(() => selected[flavor.name] = result);
   }
 
   @override
   Widget build(BuildContext context) {
-    final selectedItems = selected.entries.map((e) {
-      return CartItem(
-        '${widget.productName} - ${e.key}',
-        e.value,
-      );
-    }).toList();
+    final selectedItems = selected.entries.map((e) => CartItem(
+      '${widget.productName} - ${e.key}', e.value)).toList();
 
-    final totalKg = selected.values.fold<int>(
-      0,
-      (a, b) => a + b,
-    );
+    final totalKg = selected.values.fold<int>(0, (a, b) => a + b);
 
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -632,9 +520,7 @@ class _FlavorPageState extends State<FlavorPage> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(18),
                         side: BorderSide(
-                          color: isSelected
-                              ? green
-                              : const Color(0xFFE5DCC4),
+                          color: isSelected ? green : const Color(0xFFE5DCC4),
                           width: isSelected ? 3 : 1,
                         ),
                       ),
@@ -647,20 +533,13 @@ class _FlavorPageState extends State<FlavorPage> {
                                 Image.asset(
                                   flavor.image,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) {
-                                    return Container(
-                                      color: const Color(0xFFFFF1D9),
-                                      child: Center(
-                                        child: Text(
-                                          '${flavor.emoji}\nگونی محصول',
-                                          textAlign: TextAlign.center,
-                                          style: const TextStyle(
-                                            fontSize: 25,
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  },
+                                  errorBuilder: (_, __, ___) => Container(
+                                    color: const Color(0xFFFFF1D9),
+                                    child: Center(
+                                      child: Text(flavor.emoji,
+                                          style: const TextStyle(fontSize: 48)),
+                                    ),
+                                  ),
                                 ),
                                 if (isSelected)
                                   const Positioned(
@@ -668,10 +547,8 @@ class _FlavorPageState extends State<FlavorPage> {
                                     left: 8,
                                     child: CircleAvatar(
                                       backgroundColor: green,
-                                      child: Icon(
-                                        Icons.check,
-                                        color: Colors.white,
-                                      ),
+                                      child: Icon(Icons.check,
+                                          color: Colors.white),
                                     ),
                                   ),
                               ],
@@ -679,18 +556,14 @@ class _FlavorPageState extends State<FlavorPage> {
                           ),
                           Container(
                             width: double.infinity,
-                            color: isSelected
-                                ? green
-                                : const Color(0xFFFFE5BD),
+                            color: isSelected ? green : const Color(0xFFFFE5BD),
                             padding: const EdgeInsets.all(9),
                             child: Column(
                               children: [
                                 Text(
                                   flavor.name,
                                   style: TextStyle(
-                                    color: isSelected
-                                        ? Colors.white
-                                        : green,
+                                    color: isSelected ? Colors.white : green,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
                                   ),
@@ -699,9 +572,7 @@ class _FlavorPageState extends State<FlavorPage> {
                                   Text(
                                     '${selected[flavor.name]} کیلو',
                                     style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 12,
-                                    ),
+                                        color: Colors.white, fontSize: 12),
                                   ),
                               ],
                             ),
@@ -718,17 +589,14 @@ class _FlavorPageState extends State<FlavorPage> {
               decoration: const BoxDecoration(
                 color: Colors.white,
                 border: Border(
-                  top: BorderSide(color: Color(0xFFE5DCC4)),
-                ),
+                    top: BorderSide(color: Color(0xFFE5DCC4))),
               ),
               child: Column(
                 children: [
                   Text(
                     'انتخاب شده: ${selected.length} مدل | مجموع وزن: $totalKg کیلو',
                     style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: green,
-                    ),
+                        fontWeight: FontWeight.bold, color: green),
                   ),
                   const SizedBox(height: 10),
                   SizedBox(
@@ -740,26 +608,15 @@ class _FlavorPageState extends State<FlavorPage> {
                       ),
                       onPressed: selected.isEmpty
                           ? null
-                          : () {
-                              Navigator.pop(context, selectedItems);
-                            },
-                      icon: const Icon(
-                        Icons.shopping_cart,
-                        color: Colors.white,
-                      ),
-                      label: const Text(
-                        'افزودن انتخاب‌ها به سبد خرید',
-                        style: TextStyle(color: Colors.white),
-                      ),
+                          : () => Navigator.pop(context, selectedItems),
+                      icon: const Icon(Icons.shopping_cart,
+                          color: Colors.white),
+                      label: const Text('افزودن انتخاب‌ها به سبد خرید',
+                          style: TextStyle(color: Colors.white)),
                     ),
                   ),
-                  const Text(
-                    'حداقل سفارش هر مدل ۵ کیلوگرم است',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
-                    ),
-                  ),
+                  const Text('حداقل سفارش هر مدل ۵ کیلوگرم است',
+                      style: TextStyle(fontSize: 12, color: Colors.grey)),
                 ],
               ),
             ),
@@ -770,15 +627,10 @@ class _FlavorPageState extends State<FlavorPage> {
   }
 }
 
-// صفحه سبد خرید
-
 class CartPage extends StatefulWidget {
   final List<CartItem> items;
 
-  const CartPage({
-    super.key,
-    required this.items,
-  });
+  const CartPage({super.key, required this.items});
 
   @override
   State<CartPage> createState() => _CartPageState();
@@ -795,10 +647,7 @@ class _CartPageState extends State<CartPage> {
 
   @override
   Widget build(BuildContext context) {
-    final total = items.fold<int>(
-      0,
-      (sum, item) => sum + item.kg,
-    );
+    final total = items.fold<int>(0, (sum, item) => sum + item.kg);
 
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -812,29 +661,21 @@ class _CartPageState extends State<CartPage> {
           children: [
             Expanded(
               child: items.isEmpty
-                  ? const Center(
-                      child: Text('سبد خرید خالی است'),
-                    )
+                  ? const Center(child: Text('سبد خرید خالی است'))
                   : ListView.builder(
                       padding: const EdgeInsets.all(12),
                       itemCount: items.length,
                       itemBuilder: (context, index) {
                         final item = items[index];
-
                         return Card(
                           child: ListTile(
                             title: Text(item.name),
                             subtitle: Text('${item.kg} کیلوگرم'),
                             trailing: IconButton(
-                              icon: const Icon(
-                                Icons.delete_outline,
-                                color: Colors.red,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  items.removeAt(index);
-                                });
-                              },
+                              icon: const Icon(Icons.delete_outline,
+                                  color: Colors.red),
+                              onPressed: () =>
+                                  setState(() => items.removeAt(index)),
                             ),
                           ),
                         );
@@ -848,9 +689,7 @@ class _CartPageState extends State<CartPage> {
                   Text(
                     'مجموع وزن: $total کیلوگرم',
                     style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                        fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
                   SizedBox(
@@ -860,13 +699,9 @@ class _CartPageState extends State<CartPage> {
                         backgroundColor: green,
                         padding: const EdgeInsets.all(15),
                       ),
-                      onPressed: () {
-                        Navigator.pop(context, items);
-                      },
-                      child: const Text(
-                        'ثبت تغییرات سبد خرید',
-                        style: TextStyle(color: Colors.white),
-                      ),
+                      onPressed: () => Navigator.pop(context, items),
+                      child: const Text('ثبت تغییرات سبد خرید',
+                          style: TextStyle(color: Colors.white)),
                     ),
                   ),
                 ],
