@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 void main() => runApp(const KhoshkbarApp());
@@ -369,7 +368,7 @@ class _HomePageState extends State<HomePage> {
                         height: 88,
                         width: double.infinity,
                         child: Image.asset(
-                          '123.png',
+                          'assets/images/۱۲۳.png',
                           fit: BoxFit.cover,
                           alignment: Alignment.center,
                           errorBuilder: (_, __, ___) {
