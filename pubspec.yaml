@@ -1,4 +1,3 @@
-
 name: khoshkbar_takhme_ala
 description: Customer app and central management starter for Khoshkbar va Tokhmeh Ala
 publish_to: 'none'
@@ -21,10 +20,10 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - file_00000000f0e081f4a087f81d600246d7 (1).png
+    - 'file_00000000f0e081f4a087f81d600246d7 (1).png'
     - assets/images/
 
 flutter_launcher_icons:
   android: true
   ios: false
-  image_path: "123.png"
+  image_path: "assets/images/۱۲۳.png"
