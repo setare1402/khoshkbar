@@ -12,7 +12,7 @@ class KhoshkbarApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'خوش‌خبر و تخمه اعلا',
+      title: 'خشک بار',
       theme: ThemeData(
         fontFamily: 'Roboto',
         colorScheme: ColorScheme.fromSeed(
@@ -83,7 +83,7 @@ class _HomePageState extends State<HomePage> {
           backgroundColor: const Color(0xFF174D32),
           foregroundColor: const Color(0xFFFFD778),
           title: const Text(
-            'خوش‌خبر و تخمه اعلا',
+            'خشک بار',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           centerTitle: true,
@@ -128,66 +128,84 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildHome(List<Map<String, dynamic>> items) {
-    return ListView(
-      padding: const EdgeInsets.all(16),
+    return Stack(
       children: [
-        Container(
-          padding: const EdgeInsets.all(22),
-          decoration: BoxDecoration(
-            color: const Color(0xFF174D32),
-            borderRadius: BorderRadius.circular(22),
-          ),
-          child: const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'کیفیت عالی، خرید مطمئن',
-                style: TextStyle(
-                  color: Color(0xFFFFD778),
-                  fontSize: 23,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 12),
-              Text(
-                'فروش انواع تخمه، آجیل، حبوبات و غلات',
-                style: TextStyle(color: Colors.white, fontSize: 15),
-              ),
-              SizedBox(height: 8),
-              Text(
-                'سفارش عمده و جزئی',
-                style: TextStyle(color: Colors.white70),
-              ),
-            ],
+        Positioned.fill(
+          child: Image.asset(
+            'file_00000000891881f4bdbf68c947edd9bc.png',
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(color: const Color(0xFFF8F6EF));
+            },
           ),
         ),
-        const SizedBox(height: 24),
-        const Text(
-          'دسته‌بندی محصولات',
-          style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
+        Positioned.fill(
+          child: Container(
+            color: Colors.white.withOpacity(0.78),
+          ),
         ),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: categories.map((category) {
-            return ChoiceChip(
-              label: Text(category),
-              selected: selectedCategory == category,
-              onSelected: (_) {
-                setState(() => selectedCategory = category);
-              },
-              selectedColor: const Color(0xFFD8B65C),
-            );
-          }).toList(),
+        ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            Container(
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                color: const Color(0xFF174D32).withOpacity(0.94),
+                borderRadius: BorderRadius.circular(22),
+              ),
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'کیفیت عالی، خرید مطمئن',
+                    style: TextStyle(
+                      color: Color(0xFFFFD778),
+                      fontSize: 23,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 12),
+                  Text(
+                    'فروش انواع تخمه، آجیل، حبوبات و غلات',
+                    style: TextStyle(color: Colors.white, fontSize: 15),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'سفارش عمده و جزئی',
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'دسته‌بندی محصولات',
+              style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: categories.map((category) {
+                return ChoiceChip(
+                  label: Text(category),
+                  selected: selectedCategory == category,
+                  onSelected: (_) {
+                    setState(() => selectedCategory = category);
+                  },
+                  selectedColor: const Color(0xFFD8B65C),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 22),
+            const Text(
+              'محصولات فروشگاه',
+              style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            _productGrid(items),
+          ],
         ),
-        const SizedBox(height: 22),
-        const Text(
-          'محصولات فروشگاه',
-          style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 12),
-        _productGrid(items),
       ],
     );
   }
