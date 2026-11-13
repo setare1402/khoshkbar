@@ -22,8 +22,6 @@ flutter:
   uses-material-design: true
   assets:
     - 123Gallery.jpg
-    - assets/images/
-    - 'file_00000000f0e081f4a087f81d600246d7 (1).png'
 
 flutter_launcher_icons:
   android: true
