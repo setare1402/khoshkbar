@@ -20,6 +20,10 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
+
+
+  assets:
+    - sunflower_field.png
 flutter_launcher_icons:
   android: true
   ios: false
