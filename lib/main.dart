@@ -20,16 +20,20 @@ class Flavor {
   const Flavor(this.name, this.image, this.emoji);
 }
 
-const flavors = Image.asset(
-  'assets/images/file_00000000f0e081f4a087f81d600246d7 (1).png',
-  fit: BoxFit.contain,
-  errorBuilder: (_, __, ___) {
-    return const Center(
-      child: Text('🌻', style: TextStyle(fontSize: 48)),
-    );
-  },
-),
-// سه تصویر مستقل برای تخمه کدو
+// هشت طعم تخمه آفتابگردان
+// در صورت نبودن تصویر اختصاصی، شکلک نمایش داده می‌شود.
+const flavors = [
+  Flavor('لیمو', '', '🍋'),
+  Flavor('گلپر لیمو', '', '🌻'),
+  Flavor('سس رنچ', '', '🥣'),
+  Flavor('پنیری', '', '🧀'),
+  Flavor('گلپر', '', '🌿'),
+  Flavor('شکری', '', '🍬'),
+  Flavor('نمکی ساده', '', '🌻'),
+  Flavor('خام', '', '🌱'),
+];
+
+// سه مدل مستقل تخمه کدو
 const pumpkinFlavors = [
   Flavor(
     'ساده شور',
@@ -239,7 +243,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // صفحه خانه با پس زمینه مزرعه آفتابگردان
+  // صفحه خانه با پس زمینه اصلی مزرعه آفتابگردان
   Widget homeBody(List<Map<String, String>> items) {
     return Stack(
       children: [
@@ -255,7 +259,6 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
 
-        // لایه سفید کم رنگ برای خوانایی نوشته ها
         Positioned.fill(
           child: Container(
             color: Colors.white.withOpacity(.35),
@@ -418,7 +421,7 @@ class _HomePageState extends State<HomePage> {
                       height: 105,
                       width: double.infinity,
                       child: Image.asset(
-                        'assets/images/sunflower_flavors_icon.png',
+                        'assets/images/file_00000000f0e081f4a087f81d600246d7 (1).png',
                         fit: BoxFit.contain,
                         errorBuilder: (_, __, ___) {
                           return const Center(
@@ -711,23 +714,36 @@ class _FlavorPageState extends State<FlavorPage> {
                             child: Stack(
                               fit: StackFit.expand,
                               children: [
-                                Image.asset(
-                                  flavor.image,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) {
-                                    return Container(
-                                      color: const Color(0xFFFFF1D9),
-                                      child: Center(
-                                        child: Text(
-                                          flavor.emoji,
-                                          style: const TextStyle(
-                                            fontSize: 48,
+                                if (flavor.image.isNotEmpty)
+                                  Image.asset(
+                                    flavor.image,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) {
+                                      return Container(
+                                        color: const Color(0xFFFFF1D9),
+                                        child: Center(
+                                          child: Text(
+                                            flavor.emoji,
+                                            style: const TextStyle(
+                                              fontSize: 48,
+                                            ),
                                           ),
                                         ),
+                                      );
+                                    },
+                                  )
+                                else
+                                  Container(
+                                    color: const Color(0xFFFFF1D9),
+                                    child: Center(
+                                      child: Text(
+                                        flavor.emoji,
+                                        style: const TextStyle(
+                                          fontSize: 48,
+                                        ),
                                       ),
-                                    );
-                                  },
-                                ),
+                                    ),
+                                  ),
 
                                 if (isSelected)
                                   const Positioned(
