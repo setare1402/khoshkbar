@@ -22,6 +22,8 @@ flutter:
   uses-material-design: true
   assets:
     - file_00000000891881f4bdbf68c947edd9bc.png
+    - file_00000000f0e081f4a087f81d600246d7 (1).png
+    - assets/images/
 
 flutter_launcher_icons:
   android: true
