@@ -20,10 +20,11 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
   assets:
-    - 123Gallery.jpg
+    - assets/images/sunflower_field.png
 
 flutter_launcher_icons:
   android: true
   ios: false
-  image_path: "123Gallery.jpg"
+  image_path: "assets/images/sunflower_field.png"
