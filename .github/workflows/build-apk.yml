@@ -36,8 +36,8 @@ jobs:
             exit 1
           fi
 
-          if [ ! -f "123Gallery.jpg" ]; then
-            echo "ERROR: 123Gallery.jpg not found in repository root!"
+          if [ ! -f "assets/images/sunflower_field.png" ]; then
+            echo "ERROR: sunflower_field.png not found!"
             exit 1
           fi
 
